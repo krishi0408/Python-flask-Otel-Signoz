@@ -64,6 +64,6 @@ python app.py
 
 ## OpenTelemetry & SigNoz Setup Guide
 This repository focuses on the Python application setup.
-For full details on how to instrument this application with OpenTelemetry and visualize the data in SigNoz, refer to the companion blog post:
+For full details on how to instrument this application with OpenTelemetry and visualize the data in SigNoz, refer to the companion blog post:- https://www.notion.so/From-Black-Box-to-Full-Observability-Instrumenting-Python-Services-with-OpenTelemetry-and-SigNoz-24c8c44242538035bf48cdf41bc5437d?source=copy_link
 
 
