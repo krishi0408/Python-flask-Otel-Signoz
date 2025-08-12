@@ -15,15 +15,13 @@ It simulates a basic order management service with two main endpoints:
 ```
 python-flask-otel-signoz
 │_ templates/
-│    └─ index.html                #  Simple HTML UI to interact with the Flask endpoints
-│
-│_ app.py                         # Flask app (Automatic Instrumentation version)
-│_ app2.py                        # Flask app (Manual Instrumentation version)
+│    └─ index.html                # Simple HTML UI to interact with the Flask endpoints
+│_ app.py                         # Flask app 
 │_ config.py                      # Loads environment variables and configures Flask app (e.g., MongoDB URI)
 │_ db.py                          # Initializes PyMongo instance for database connection
 │_ logger.py                      # Configures application-wide logging
 │_ requirements.txt               # Python dependencies list
-|_ .env                           # Environment variables (MongoDB URI, OTEL configs, etc.)
+|_ .env                           # Environment variables (MongoDB URI)
 ```
 ## Prerequisites
 

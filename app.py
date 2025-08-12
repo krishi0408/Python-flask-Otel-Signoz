@@ -3,9 +3,15 @@ from bson.objectid import ObjectId
 from config import configure_app
 from db import mongo
 from logger import logger
+from opentelemetry import trace
+from opentelemetry.trace import StatusCode, Status
 import random
 import time
 import os
+from datetime import datetime
+
+
+tracer = trace.get_tracer(__name__)
 
 app = Flask(__name__)
 configure_app(app)
@@ -17,20 +23,34 @@ def index():
 
 @app.route("/createOrder", methods=["POST"])
 def create_order():
-    if random.random() < 0.1:
-        logger.error("Order creation failed due to random error.")
-        return jsonify({"error": "Failed to create order"}), 500
-
-    item_name = request.form.get("item_name")
-    quantity = request.form.get("quantity")
-
-    if not item_name or not quantity:
-        logger.warning("Invalid input: missing item_name or quantity.")
-        return redirect(url_for("index"))
-
-    mongo.db.orders.insert_one({"item_name": item_name, "quantity": int(quantity)})
-    logger.info(f"Order created: {item_name} - {quantity}")
-    return redirect(url_for("index"))
+    with tracer.start_as_current_span("db_process_order") as span:
+        try:
+            item_name = request.form.get("item_name")
+            quantity = request.form.get("quantity")
+            span.set_attribute("item_name", item_name)
+            span.set_attribute("quantity", quantity)
+            span.add_event("Order Processing started")
+            order = {
+                'item': item_name,
+                'quantity': quantity,
+                'created_at': datetime.now()
+            }
+            result = mongo.db.orders.insert_one(order)
+            logger.info(f"Order created: {item_name} - {quantity}")
+            span.add_event("Order successfully created in database", {
+                "order.id": str(result.inserted_id),
+                "order.status": "success"
+            })
+            span.set_status(Status(StatusCode.OK, "Order created successfully"))
+            return redirect('/')
+        except Exception as e:
+             span.add_event("Order creation failed", {
+                "error.message": str(e),
+                "order.status": "failed"
+            })
+             span.set_status(Status(StatusCode.ERROR, f"Order creation failed: {str(e)}"))
+             logger.error(f"Order creation failed: {str(e)}")
+             return "Order creation failed", StatusCode.ERROR
 
 @app.route("/checkInventory", methods=["GET"])
 def check_inventory():
